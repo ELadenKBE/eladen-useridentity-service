@@ -24,7 +24,7 @@ class BaseService:
                         """
             }
             response = requests.post(self.url,
-                                     json=introspection_query)
+                                     data=introspection_query)
             if response.status_code == 200:
                 pass
             else:
