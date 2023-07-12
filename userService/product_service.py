@@ -1,3 +1,5 @@
+"""Product Service is used to create service lists when a user created.
+"""
 import graphene
 from decouple import config
 from graphene_django import DjangoObjectType
@@ -30,4 +32,3 @@ class ProductService(BaseService):
 
     def create_goods_list(self, title: str, user_id):
         self._create_item(title=title, user_id=user_id)
-
