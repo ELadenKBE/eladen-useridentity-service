@@ -1,16 +1,11 @@
-from django.contrib.auth import get_user_model
-
 import graphene
 from django.db.models import Q
-from graphene_django import DjangoObjectType
 
-from userService.permissions import permission, Admin, All, Seller, User, Anon
+from userService.product_service import ProductService, UserType
 from users.models import ExtendedUser
 
 
-class UserType(DjangoObjectType):
-    class Meta:
-        model = ExtendedUser
+product_service = ProductService()
 
 
 class Query(graphene.ObjectType):
@@ -94,17 +89,11 @@ class CreateUser(graphene.Mutation):
         user.set_password(password)
         user.save()
         if user.is_user():
-            # TODO add liked and cart
-            # cart_list = GoodsList(title="cart", user=user)
-            # cart_list.save()
-            # liked = GoodsList(title="liked", user=user)
-            # liked.save()
-            pass
+            product_service.create_goods_list(title="cart", user_id=user.id)
+            product_service.create_goods_list(title="liked", user_id=user.id)
         if user.is_seller():
-            # TODO add goods_to_sell
-            # goods_to_sell = GoodsList(title="goods_to_sell", user=user)
-            # goods_to_sell.save()
-            pass
+            product_service.create_goods_list(title="goods_to_sell",
+                                              user_id=user.id)
         return CreateUser(
             id=user.id,
             username=user.username,

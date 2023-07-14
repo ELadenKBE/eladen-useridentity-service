@@ -3,7 +3,7 @@ from typing import Type
 
 from django.contrib.auth.models import AnonymousUser
 
-from app.errors import UnauthorizedError
+from userService.errors import UnauthorizedError
 from users.models import ExtendedUser
 
 """This is an implementation of permissions and roles"""
