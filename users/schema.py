@@ -40,6 +40,7 @@ class CreateUser(graphene.Mutation):
     firstname = graphene.String()
     lastname = graphene.String()
     image = graphene.String()
+    sub = graphene.String()
 
     class Arguments:
         username = graphene.String(required=True)
