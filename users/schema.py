@@ -11,12 +11,19 @@ product_service = ProductService()
 class Query(graphene.ObjectType):
     users = graphene.List(UserType,
                           search=graphene.String(),
+                          sub=graphene.String(),
                           searched_id=graphene.Int())
 
-    def resolve_users(self, info, searched_id=None, search=None, **kwargs):
+    def resolve_users(self,
+                      info,
+                      searched_id=None,
+                      search=None,
+                      sub=None,
+                      **kwargs):
         """
         TODO add docs
 
+        :param sub:
         :param info:
         :param searched_id:
         :param search:
@@ -28,6 +35,8 @@ class Query(graphene.ObjectType):
             return [ExtendedUser.objects.filter(search_filter).first()]
         if searched_id:
             return [ExtendedUser.objects.filter(id=searched_id).first()]
+        if sub:
+            return [ExtendedUser.objects.filter(sub=sub).first()]
         return ExtendedUser.objects.all()
 
 
@@ -51,6 +60,7 @@ class CreateUser(graphene.Mutation):
         firstname = graphene.String()
         lastname = graphene.String()
         image = graphene.String()
+        sub = graphene.String()
 
 #    @permission(roles=[Admin, Anon])
     def mutate(self,
@@ -62,10 +72,12 @@ class CreateUser(graphene.Mutation):
                image=None,
                address=None,
                firstname=None,
-               lastname=None):
+               lastname=None,
+               sub=None):
         """
         TODO add docs
 
+        :param sub:
         :param info:
         :param username:
         :param password:
@@ -85,7 +97,8 @@ class CreateUser(graphene.Mutation):
             address=address,
             lastname=lastname,
             firstname=firstname,
-            image=image
+            image=image,
+            sub=sub
         )
         user.set_password(password)
         user.save()
