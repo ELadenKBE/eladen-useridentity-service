@@ -139,7 +139,7 @@ class UpdateUser(graphene.Mutation):
         lastname = graphene.String()
         image = graphene.String()
 
-#    @permission(roles=[Admin, Seller, User])
+    @grant_authorization
     def mutate(self,
                info,
                user_id,
