@@ -1,8 +1,10 @@
 import json
 
 import requests
+from graphql import GraphQLResolveInfo
 
-from userService.errors import ResponseError, ValidationError
+from userService.errors import ResponseError, ValidationError, \
+    UnauthorizedError
 
 
 class BaseService:
@@ -34,12 +36,18 @@ class BaseService:
             raise ResponseError(f"{self.service_name} Service is not answering"
                                 )
 
-    def _request(self, title: str, user_id):
+    def _request(self, title: str, sub):
+        """
+
+        :param title:
+        :param sub: authorisation token
+        :return:
+        """
         template = '''mutation{{createGoodsList(title:"{0}"){{id title}}}}'''
         query = template.format(title)
         response = requests.post(self.url,
                                  data={'query': query},
-                                 headers={'AUTHORIZATION': user_id}
+                                 headers={'AUTHORIZATION': sub}
                                  )
         self._validate_errors(response)
 
@@ -51,6 +59,18 @@ class BaseService:
             )['errors']
             raise ValidationError(cleaned_json[0]['message'])
 
-    def _create_item(self, title: str, user_id):
+    def _create_item(self, title: str, sub: str):
         self._verify_connection()
-        self._request(title=title, user_id=str(user_id))
+        self._request(title=title, sub=sub)
+
+    @staticmethod
+    def _get_auth_header(info: GraphQLResolveInfo):
+        try:
+            auth_header: str = info.context.headers['AUTHORIZATION']
+        except KeyError as key_error:
+            raise UnauthorizedError('authorization error: AUTHORIZATION header'
+                                    ' is not specified')
+        except ResponseError as response_error:
+            raise UnauthorizedError('authorization error: ',
+                                    response_error.args[0])
+        return auth_header

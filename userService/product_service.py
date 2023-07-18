@@ -1,12 +1,15 @@
 """Product Service is used to create service lists when a user created.
 """
+import urllib.parse
+
 import graphene
 from decouple import config
 from graphene_django import DjangoObjectType
+from graphql import GraphQLResolveInfo
 
 from userService.base_service import BaseService
 from users.models import ExtendedUser
-
+import re
 
 class UserType(DjangoObjectType):
     class Meta:
@@ -30,5 +33,21 @@ class ProductService(BaseService):
     url = config('PRODUCT_SERVICE_URL', default=False, cast=str)
     service_name = 'Product'
 
-    def create_goods_list(self, title: str, user_id):
-        self._create_item(title=title, user_id=user_id)
+    def create_goods_list_when_signup(self,
+                                      info: GraphQLResolveInfo,
+                                      title: str):
+        sub_auth = self._get_sub_when_signup(info)
+        return self._create_item(title=title, sub="sub "+sub_auth)
+
+    @staticmethod
+    def _get_sub_when_signup(info: GraphQLResolveInfo):
+        cleaned = info.context.body.decode('utf-8') \
+            .replace('\\n', ' ') \
+            .replace('\\t', ' ')
+        cleaned = urllib.parse.unquote(cleaned).replace('+', ' ')
+        # The modified regular expression pattern r'sub:\s*"([^"]*)"' will
+        # match occurrences of "sub:" followed by optional whitespace (\s*),
+        # double quotes ("), and then any characters that are not double
+        # quotes ([^"]*).
+        sub = re.search(r'sub:\s*"([^"]*)"', cleaned).group(1)
+        return sub

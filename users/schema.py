@@ -1,6 +1,7 @@
 import graphene
 from django.db.models import Q
 
+from userService.authorization import grant_authorization
 from userService.product_service import ProductService, UserType
 from users.models import ExtendedUser
 
@@ -53,7 +54,6 @@ class CreateUser(graphene.Mutation):
 
     class Arguments:
         username = graphene.String(required=True)
-        password = graphene.String(required=True)
         email = graphene.String(required=True)
         role = graphene.Int(required=True)
         address = graphene.String()
@@ -62,11 +62,10 @@ class CreateUser(graphene.Mutation):
         image = graphene.String()
         sub = graphene.String()
 
-#    @permission(roles=[Admin, Anon])
+    @grant_authorization
     def mutate(self,
                info,
                username,
-               password,
                email,
                role,
                image=None,
@@ -80,7 +79,6 @@ class CreateUser(graphene.Mutation):
         :param sub:
         :param info:
         :param username:
-        :param password:
         :param email:
         :param role:
         :param image:
@@ -90,6 +88,7 @@ class CreateUser(graphene.Mutation):
         :return:
         """
         validate_role(role)
+        # TODO users can not create admins
         user = ExtendedUser(
             username=username,
             email=email,
@@ -98,16 +97,18 @@ class CreateUser(graphene.Mutation):
             lastname=lastname,
             firstname=firstname,
             image=image,
+            # TODO extract sub from token if user or seller
             sub=sub
         )
-        user.set_password(password)
         user.save()
         if user.is_user():
-            product_service.create_goods_list(title="cart", user_id=user.id)
-            product_service.create_goods_list(title="liked", user_id=user.id)
+            product_service.create_goods_list_when_signup(info=info,
+                                                          title="cart")
+            product_service.create_goods_list_when_signup(info=info,
+                                                          title="liked")
         if user.is_seller():
-            product_service.create_goods_list(title="goods_to_sell",
-                                              user_id=user.id)
+            product_service.create_goods_list_when_signup(info=info,
+                                                          title="goods_to_sell")
         return CreateUser(
             id=user.id,
             username=user.username,
