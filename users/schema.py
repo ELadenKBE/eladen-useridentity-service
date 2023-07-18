@@ -185,7 +185,7 @@ class DeleteUser(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)
 
- #   @permission(roles=[Admin, Seller, User])
+    @grant_authorization
     def mutate(self, info, user_id):
         """
         TODO add docs
