@@ -101,11 +101,8 @@ class CreateUser(graphene.Mutation):
             sub=sub
         )
         user.save()
-        if user.is_user():
-            product_service.create_goods_list_when_signup(info=info,
-                                                          title="cart")
-            product_service.create_goods_list_when_signup(info=info,
-                                                          title="liked")
+        product_service.create_goods_list_when_signup(info=info, title="cart")
+        product_service.create_goods_list_when_signup(info=info, title="liked")
         if user.is_seller():
             product_service.create_goods_list_when_signup(info=info,
                                                           title="goods_to_sell")
