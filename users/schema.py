@@ -1,6 +1,7 @@
 import graphene
 from django.db.models import Q
 
+from userService.authorization import grant_authorization
 from userService.product_service import ProductService, UserType
 from users.models import ExtendedUser
 
@@ -11,12 +12,19 @@ product_service = ProductService()
 class Query(graphene.ObjectType):
     users = graphene.List(UserType,
                           search=graphene.String(),
+                          sub=graphene.String(),
                           searched_id=graphene.Int())
 
-    def resolve_users(self, info, searched_id=None, search=None, **kwargs):
+    def resolve_users(self,
+                      info,
+                      searched_id=None,
+                      search=None,
+                      sub=None,
+                      **kwargs):
         """
         TODO add docs
 
+        :param sub:
         :param info:
         :param searched_id:
         :param search:
@@ -28,6 +36,8 @@ class Query(graphene.ObjectType):
             return [ExtendedUser.objects.filter(search_filter).first()]
         if searched_id:
             return [ExtendedUser.objects.filter(id=searched_id).first()]
+        if sub:
+            return [ExtendedUser.objects.filter(sub=sub).first()]
         return ExtendedUser.objects.all()
 
 
@@ -40,34 +50,35 @@ class CreateUser(graphene.Mutation):
     firstname = graphene.String()
     lastname = graphene.String()
     image = graphene.String()
+    sub = graphene.String()
 
     class Arguments:
         username = graphene.String(required=True)
-        password = graphene.String(required=True)
         email = graphene.String(required=True)
         role = graphene.Int(required=True)
         address = graphene.String()
         firstname = graphene.String()
         lastname = graphene.String()
         image = graphene.String()
+        sub = graphene.String()
 
-#    @permission(roles=[Admin, Anon])
+    @grant_authorization
     def mutate(self,
                info,
                username,
-               password,
                email,
                role,
                image=None,
                address=None,
                firstname=None,
-               lastname=None):
+               lastname=None,
+               sub=None):
         """
         TODO add docs
 
+        :param sub:
         :param info:
         :param username:
-        :param password:
         :param email:
         :param role:
         :param image:
@@ -77,6 +88,7 @@ class CreateUser(graphene.Mutation):
         :return:
         """
         validate_role(role)
+        # TODO users can not create admins
         user = ExtendedUser(
             username=username,
             email=email,
@@ -84,16 +96,16 @@ class CreateUser(graphene.Mutation):
             address=address,
             lastname=lastname,
             firstname=firstname,
-            image=image
+            image=image,
+            # TODO extract sub from token if user or seller
+            sub=sub
         )
-        user.set_password(password)
         user.save()
-        if user.is_user():
-            product_service.create_goods_list(title="cart", user_id=user.id)
-            product_service.create_goods_list(title="liked", user_id=user.id)
+        product_service.create_goods_list_when_signup(info=info, title="cart")
+        product_service.create_goods_list_when_signup(info=info, title="liked")
         if user.is_seller():
-            product_service.create_goods_list(title="goods_to_sell",
-                                              user_id=user.id)
+            product_service.create_goods_list_when_signup(info=info,
+                                                          title="goods_to_sell")
         return CreateUser(
             id=user.id,
             username=user.username,
@@ -124,7 +136,7 @@ class UpdateUser(graphene.Mutation):
         lastname = graphene.String()
         image = graphene.String()
 
-#    @permission(roles=[Admin, Seller, User])
+    @grant_authorization
     def mutate(self,
                info,
                user_id,
@@ -170,7 +182,7 @@ class DeleteUser(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)
 
- #   @permission(roles=[Admin, Seller, User])
+    @grant_authorization
     def mutate(self, info, user_id):
         """
         TODO add docs
