@@ -11,6 +11,7 @@ from userService.base_service import BaseService
 from users.models import ExtendedUser
 import re
 
+
 class UserType(DjangoObjectType):
     class Meta:
         model = ExtendedUser
@@ -29,8 +30,10 @@ class GoodsListTransferType(graphene.ObjectType):
 
 
 class ProductService(BaseService):
-
-    url = config('PRODUCT_SERVICE_URL', default=False, cast=str)
+    # url = config('PRODUCT_SERVICE_URL',
+    #              default="http://product-service:8082/graphql/",
+    #              cast=str)
+    url = "http://product-service:8082/graphql/"
     service_name = 'Product'
 
     def create_goods_list_when_signup(self,

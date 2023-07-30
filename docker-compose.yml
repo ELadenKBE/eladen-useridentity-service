@@ -30,14 +30,13 @@ services:
     depends_on:
       - postgres
 
-  web:
+  user-identity:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "${PORT}:${PORT}"
       - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
-      - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
     volumes:
       - .:/code
     command: python manage.py runserver 0.0.0.0:${PORT}
@@ -46,5 +45,3 @@ services:
       - DEBUG=${DEBUG}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
       - PRODUCT_SERVICE_PORT=${PRODUCT_SERVICE_PORT}
-      - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
-      - ORDER_SERVICE_PORT=${ORDER_SERVICE_PORT}
