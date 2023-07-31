@@ -120,7 +120,8 @@ class CreateUser(graphene.Mutation):
             address=user.address,
             lastname=user.lastname,
             firstname=user.firstname,
-            image=user.image
+            image=user.image,
+            sub=user.sub
         )
 
 
