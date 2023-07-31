@@ -65,9 +65,9 @@ class CreateUser(graphene.Mutation):
 #    @grant_authorization
     def mutate(self,
                info,
-               username,
-               email,
-               role,
+               username=None,
+               email=None,
+               role=None,
                image=None,
                address=None,
                firstname=None,
