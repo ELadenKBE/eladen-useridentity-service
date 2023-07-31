@@ -38,8 +38,9 @@ class ProductService(BaseService):
 
     def create_goods_list_when_signup(self,
                                       info: GraphQLResolveInfo,
-                                      title: str):
-        sub_auth = self._get_sub_when_signup(info)
+                                      title: str,
+                                      sub: str):
+        sub_auth = sub
         return self._create_item(title=title, sub="sub "+sub_auth)
 
     @staticmethod
