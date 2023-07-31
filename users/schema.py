@@ -53,9 +53,9 @@ class CreateUser(graphene.Mutation):
     sub = graphene.String()
 
     class Arguments:
-        username = graphene.String(required=True)
+        username = graphene.String()
         email = graphene.String()
-        role = graphene.Int(required=True)
+        role = graphene.Int()
         address = graphene.String()
         firstname = graphene.String()
         lastname = graphene.String()
