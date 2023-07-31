@@ -62,7 +62,7 @@ class CreateUser(graphene.Mutation):
         image = graphene.String()
         sub = graphene.String()
 
-    @grant_authorization
+#    @grant_authorization
     def mutate(self,
                info,
                username,
@@ -101,11 +101,17 @@ class CreateUser(graphene.Mutation):
             sub=sub
         )
         user.save()
-        product_service.create_goods_list_when_signup(info=info, title="cart")
-        product_service.create_goods_list_when_signup(info=info, title="liked")
+        product_service.create_goods_list_when_signup(info=info,
+                                                      title="cart",
+                                                      sub=sub)
+        product_service.create_goods_list_when_signup(info=info,
+                                                      title="liked",
+                                                      sub=sub)
         if user.is_seller():
-            product_service.create_goods_list_when_signup(info=info,
-                                                          title="goods_to_sell")
+            product_service.create_goods_list_when_signup(
+                info=info,
+                title="goods_to_sell",
+                sub=sub)
         return CreateUser(
             id=user.id,
             username=user.username,
@@ -114,7 +120,8 @@ class CreateUser(graphene.Mutation):
             address=user.address,
             lastname=user.lastname,
             firstname=user.firstname,
-            image=user.image
+            image=user.image,
+            sub=user.sub
         )
 
 
