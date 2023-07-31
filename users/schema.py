@@ -62,7 +62,7 @@ class CreateUser(graphene.Mutation):
         image = graphene.String()
         sub = graphene.String()
 
-    @grant_authorization
+#    @grant_authorization
     def mutate(self,
                info,
                username,
